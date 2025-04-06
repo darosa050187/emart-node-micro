@@ -26,7 +26,7 @@ pipeline{
         ECR_REGISTRY_NAME = "emart-book-repository"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         AWS_REGISTRY_CREDENTIAL = "ecr:us-east-1:AWS"
-        IMAGE_NAME = "emart-books"
+        IMAGE_NAME = "emart-book-repository"
         IMAGE_VERSION = "latest"
     }
     stages{
@@ -138,8 +138,8 @@ pipeline{
           steps {
             script {
               sh "docker build -t ${IMAGE_NAME}:${IMAGE_VERSION} ."
-              sh "docker tag ${IMAGE_NAME}:${IMAGE_VERSION} ${ECR_REGISTRY_NAME}/${IMAGE_NAME}:${IMAGE_VERSION}"
-              sh "docker tag ${IMAGE_NAME}:${IMAGE_VERSION} ${ECR_REGISTRY_NAME}/${IMAGE_NAME}:${IMAGE_TAG}"
+              sh "docker tag ${IMAGE_NAME}:${IMAGE_VERSION} ${ECR_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_VERSION}"
+              sh "docker tag ${IMAGE_NAME}:${IMAGE_VERSION} ${ECR_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
           }
         }
@@ -174,6 +174,17 @@ pipeline{
                         } catch (Exception e) {
                             error "Failed to push ${IMAGE_NAME}: ${e.message}"
                         }
+                    }
+                }
+            }
+        }
+        stage('Clean up images from local host') {
+            steps {
+                script {
+                    try {
+                        sh 'docker rmi -f $(docker images -a -q)'
+                    } catch (Exception e) {
+                        echo "Warning: Failed to clean up Docker images: ${e.message}"
                     }
                 }
             }
