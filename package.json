@@ -7,7 +7,7 @@
     "test": "echo \"Running tests...\" && exit 0",
     "start": "node server",
     "server": "nodemon server.js",
-    "build": "npm run  build"
+    "build": "npm run build"
   },
   "keywords": [
     "mongoose",

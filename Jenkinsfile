@@ -97,10 +97,12 @@ pipeline{
                 stage("Build and compile") {
                     steps {
                         dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
+                            echo 'Start build stage .... '
                             sh '''
                                 npm ci
-                                npm run build
+                                CI=true npm run build --verbose
                             '''
+                            echo 'Build completed. '
                         }
                     }
                 }
