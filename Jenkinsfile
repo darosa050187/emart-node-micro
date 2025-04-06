@@ -75,6 +75,11 @@ pipeline{
                 }
             }
         }
+        stage("Test and build code") {
+            steps {
+                echo "Add the test and build steps here if needed"
+            }
+        }
         stage("Check code With SonarQube") {
           environment {
             scannerHome = tool 'sonar6.2'
