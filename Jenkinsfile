@@ -97,7 +97,10 @@ pipeline{
                 stage("Build and compile") {
                     steps {
                         dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
-                            sh 'npm run build'
+                            sh '''
+                                npm ci
+                                npm run build
+                            '''
                         }
                     }
                 }
@@ -111,13 +114,13 @@ pipeline{
             dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
               withSonarQubeEnv('Jenkins2Sonar') { 
                 sh '''${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=emart_nodeapi_api \
-                            -Dsonar.projectName=emart_nodeapi_api \
-                            -Dsonar.projectVersion=1.0 \
-                            -Dsonar.sources=. ''' 
-              }
-            }
-          }
+                        -Dsonar.projectKey=emart_nodeapi_api \
+                        -Dsonar.projectName=emart_nodeapi_api \
+                        -Dsonar.projectVersion=1.0 \
+                        -Dsonar.sources=. ''' 
+                    }
+                }
+            } 
         }
         // stage("Quality Gate") {
         //   steps {
@@ -181,7 +184,10 @@ pipeline{
             steps {
                 script {
                     try {
-                        sh 'docker rmi -f $(docker images -a -q)'
+                        sh '''
+                            docker images | grep ${IMAGE_NAME} | awk '{print $3}' | xargs -r docker rmi -f
+                            docker system prune -f
+                        '''
                     } catch (Exception e) {
                         echo "Warning: Failed to clean up Docker images: ${e.message}"
                     }
