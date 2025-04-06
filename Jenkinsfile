@@ -15,18 +15,18 @@ def notifySlack(String buildStatus) {
 pipeline{
     agent any 
     environment{
-        REQUIRED_TOOLS = "docker, aws, java"
-        BRANCH_NAME = "feature-login-start"
-        PROJECT_NAME = "emart-books-micro"
+        REQUIRED_TOOLS = "docker, aws, nodejs"
+        BRANCH_NAME = "feature-json-release"
+        PROJECT_NAME = "emart-jsonapi-micro"
         ARTIFACT_NAME = "book-work-0.0.1-SNAPSHOT.jar"
-        GIT_REPO_URL = "https://github.com/darosa050187/emart-books-micro.git"
+        GIT_REPO_URL = "https://github.com/darosa050187/emart-node-micro.git"
         AWS_REGION = "us-east-1"
         ECR_REGISTRY_URI = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         ECR_REGISTRY_REPO = "084828572941.dkr.ecr.us-east-1.amazonaws.com"
-        ECR_REGISTRY_NAME = "emart-book-repository"
+        ECR_REGISTRY_NAME = "emart-emartapi-repository"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         AWS_REGISTRY_CREDENTIAL = "ecr:us-east-1:AWS"
-        IMAGE_NAME = "emart-book-repository"
+        IMAGE_NAME = "emart-emartapi-repository"
         IMAGE_VERSION = "latest"
     }
     stages{
@@ -87,17 +87,17 @@ pipeline{
                 //         }
                 //     }
                 // }
-                // stage("Code Analysis With Check Style") {
-                //     steps {
-                //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-                //             sh 'mvn checkstyle:checkstyle'
-                //         }
-                //     }
-                // }
+                stage("Static test code analysis") {
+                    steps {
+                        dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
+                            sh 'npm test'
+                        }
+                    }
+                }
                 stage("Build and compile") {
                     steps {
                         dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
-                            sh 'mvn install -DskipTests'
+                            sh 'npm run build'
                         }
                     }
                 }
@@ -111,11 +111,10 @@ pipeline{
             dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
               withSonarQubeEnv('Jenkins2Sonar') { 
                 sh '''${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=emart_books_api \
-                            -Dsonar.projectName=emart_books_api \
+                            -Dsonar.projectKey=emart_nodeapi_api \
+                            -Dsonar.projectName=emart_nodeapi_api \
                             -Dsonar.projectVersion=1.0 \
-                            -Dsonar.sources=. \
-                            -Dsonar.java.binaries=.  ''' 
+                            -Dsonar.sources=. ''' 
               }
             }
           }
