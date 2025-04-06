@@ -1,4 +1,4 @@
-def notifySlack(String buildStatus) {
+def notifySlack(String buildStatus, String slackChannel = "#emartapp-json-micro-team") {
     def colorCode = buildStatus == 'SUCCESS' ? '#36a64f' : '#ff0000'
     def summary = "*Job:* ${env.JOB_NAME} #${env.BUILD_NUMBER}\n" +
                  "*Status:* ${buildStatus}\n" +
@@ -6,7 +6,7 @@ def notifySlack(String buildStatus) {
                  "*Details:* ${env.BUILD_URL}"
 
     slackSend(
-        channel: env.SLACK_CHANNEL,
+        channel: slackChannel,
         color: colorCode,
         message: summary,
         tokenCredentialId: env.SLACK_CREDENTIALS_ID
@@ -15,17 +15,21 @@ def notifySlack(String buildStatus) {
 pipeline{
     agent any 
     environment{
+        // *** Project variables  
         REQUIRED_TOOLS = "docker, aws, nodejs"
         BRANCH_NAME = "feature-json-release"
         PROJECT_NAME = "emart-node-micro"
-        ARTIFACT_NAME = "book-work-0.0.1-SNAPSHOT.jar"
+        ARTIFACT_NAME = "book-work-0.0.1-SNAPSHOT.jar" //Change if build the artifact apart from the multistage docker file is an option
+        // ** Git Repositories
         GIT_REPO_URL = "https://github.com/darosa050187/emart-node-micro.git"
+        // ** AWS Variables
         AWS_REGION = "us-east-1"
+        AWS_REGISTRY_CREDENTIAL = "ecr:us-east-1:AWS"
         ECR_REGISTRY_URI = "https://084828572941.dkr.ecr.us-east-1.amazonaws.com"
         ECR_REGISTRY_REPO = "084828572941.dkr.ecr.us-east-1.amazonaws.com"
         ECR_REGISTRY_NAME = "emart-emartapi-repository"
+        // ** Docker variables
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        AWS_REGISTRY_CREDENTIAL = "ecr:us-east-1:AWS"
         IMAGE_NAME = "emart-emartapi-repository"
         IMAGE_VERSION = "latest"
     }
@@ -71,43 +75,6 @@ pipeline{
                 }
             }
         }
-        // stage("Code Test Processes") {
-        //     parallel {
-        //         // stage("Unit Test") {
-        //         //     steps {
-        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-        //         //             sh 'mvn test'
-        //         //         }
-        //         //     }
-        //         // }
-        //         // stage("Integration Test") {
-        //         //     steps {
-        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-        //         //             sh 'mvn verify -e'
-        //         //         }
-        //         //     }
-        //         // }
-        //         // stage("Static test code analysis") {
-        //         //     steps {
-        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-        //         //             sh 'npm test'
-        //         //         }
-        //         //     }
-        //         // }
-        //         // stage("Build and compile") {
-        //         //     steps {
-        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
-        //         //             echo 'Start build stage .... '
-        //         //             sh '''
-        //         //                 npm ci
-        //         //                 CI=true npm run build --verbose
-        //         //             '''
-        //         //             echo 'Build completed. '
-        //         //         }
-        //         //     }
-        //         // }
-        //     }
-        // }
         stage("Check code With SonarQube") {
           environment {
             scannerHome = tool 'sonar6.2'
@@ -116,8 +83,8 @@ pipeline{
             dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
               withSonarQubeEnv('Jenkins2Sonar') { 
                 sh '''${scannerHome}/bin/sonar-scanner \
-                        -Dsonar.projectKey=emart_nodeapi_api \
-                        -Dsonar.projectName=emart_nodeapi_api \
+                        -Dsonar.projectKey=${PROJECT_NAME} \
+                        -Dsonar.projectName=${PROJECT_NAME} \
                         -Dsonar.projectVersion=1.0 \
                         -Dsonar.sources=. ''' 
                     }
