@@ -17,7 +17,7 @@ pipeline{
     environment{
         REQUIRED_TOOLS = "docker, aws, nodejs"
         BRANCH_NAME = "feature-json-release"
-        PROJECT_NAME = "emart-jsonapi-micro"
+        PROJECT_NAME = "emart-node-micro"
         ARTIFACT_NAME = "book-work-0.0.1-SNAPSHOT.jar"
         GIT_REPO_URL = "https://github.com/darosa050187/emart-node-micro.git"
         AWS_REGION = "us-east-1"
@@ -71,43 +71,43 @@ pipeline{
                 }
             }
         }
-        stage("Code Test Processes") {
-            parallel {
-                // stage("Unit Test") {
-                //     steps {
-                //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-                //             sh 'mvn test'
-                //         }
-                //     }
-                // }
-                // stage("Integration Test") {
-                //     steps {
-                //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-                //             sh 'mvn verify -e'
-                //         }
-                //     }
-                // }
-                stage("Static test code analysis") {
-                    steps {
-                        dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
-                            sh 'npm test'
-                        }
-                    }
-                }
-                stage("Build and compile") {
-                    steps {
-                        dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
-                            echo 'Start build stage .... '
-                            sh '''
-                                npm ci
-                                CI=true npm run build --verbose
-                            '''
-                            echo 'Build completed. '
-                        }
-                    }
-                }
-            }
-        }
+        // stage("Code Test Processes") {
+        //     parallel {
+        //         // stage("Unit Test") {
+        //         //     steps {
+        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
+        //         //             sh 'mvn test'
+        //         //         }
+        //         //     }
+        //         // }
+        //         // stage("Integration Test") {
+        //         //     steps {
+        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
+        //         //             sh 'mvn verify -e'
+        //         //         }
+        //         //     }
+        //         // }
+        //         // stage("Static test code analysis") {
+        //         //     steps {
+        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_FOLDER}") {
+        //         //             sh 'npm test'
+        //         //         }
+        //         //     }
+        //         // }
+        //         // stage("Build and compile") {
+        //         //     steps {
+        //         //         dir("${env.WORKSPACE}/tmp/${env.PROJECT_NAME}") {
+        //         //             echo 'Start build stage .... '
+        //         //             sh '''
+        //         //                 npm ci
+        //         //                 CI=true npm run build --verbose
+        //         //             '''
+        //         //             echo 'Build completed. '
+        //         //         }
+        //         //     }
+        //         // }
+        //     }
+        // }
         stage("Check code With SonarQube") {
           environment {
             scannerHome = tool 'sonar6.2'
@@ -131,13 +131,6 @@ pipeline{
         //     }
         //   }
         // }
-        stage('Copy Artifact to workspace') {
-          steps {
-            script {
-              sh "cp ${env.WORKSPACE}/tmp/${PROJECT_NAME}/target/${env.ARTIFACT_NAME} ${env.WORKSPACE}"
-            } 
-          }
-        }
         stage('Build docker image') {
           steps {
             script {
